@@ -234,7 +234,7 @@ function getEstadoIcon(estado) {
     if (!estado) return '⏳';
     const e = estado.trim().toLowerCase();
     if (e.includes('pendient')) return '⏳';
-    if (e.includes('proceso') || e.includes('esperando')) return '????';
+    if (e.includes('proceso') || e.includes('esperando')) return '⚙️';
     if (e.includes('listo') || e.includes('list')) return '✅';
     if (e.includes('entregad')) return '????';
     return '⏳';
@@ -398,9 +398,9 @@ function renderizarLista(lista) {
                     <label>Actualizar estado:</label>
                     <select class="select-estado" onchange="actualizarEstadoTaller(${item.id}, this.value)">
                         <option value="Pendiente" ${estado.toLowerCase().includes('pendient') ? 'selected' : ''}>⏳ Pendiente</option>
-                        <option value="En Proceso" ${(estado.toLowerCase().includes('proceso') || estado.toLowerCase().includes('esperando')) ? 'selected' : ''}>???? En Proceso</option>
+                        <option value="En Proceso" ${(estado.toLowerCase().includes('proceso') || estado.toLowerCase().includes('esperando')) ? 'selected' : ''}>⚙️ En Proceso</option>
                         <option value="Listo" ${estado.toLowerCase().includes('list') ? 'selected' : ''}>✅ Listo para Entrega</option>
-                        <option value="Entregado" ${estado.toLowerCase().includes('entregad') ? 'selected' : ''}>???? Entregado al Cliente</option>
+                        <option value="Entregado" ${estado.toLowerCase().includes('entregad') ? 'selected' : ''}>✓ Entregado al Cliente</option>
                     </select>
                 </div>
                 <div class="action-buttons">
