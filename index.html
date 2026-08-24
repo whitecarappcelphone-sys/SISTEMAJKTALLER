@@ -450,7 +450,18 @@ function formatearWhatsapp(telefono) {
 
 function mensajeWhatsapp(item) {
     const estado = item.estado_taller || 'Pendiente';
-    return `Hola ${item.customer_name || 'cliente'}, le informamos que su reparación de *${item.equipo || 'equicio'}* en *ACCESORIOS JK* se encuentra: *${estado}*.nnTicket: ${item.numero_factura || 'N/A'}n???? Calle 14 # 2-67 Centro Ibagué-Tolima`;
+    
+    return `Hola ${item.customer_name || 'cliente'},
+
+Le informamos que su reparación de *${item.equipo || 'equipo'}* en *ACCESORIOS JK* se encuentra actualmente en estado: *${estado}*.
+
+Ticket: ${item.numero_factura || 'N/A'}
+
+Dirección:
+Calle 14 # 2-67
+Centro, Ibagué - Tolima
+
+Gracias por confiar en ACCESORIOS JK.`;
 }
 
 function verImagen(url) {
