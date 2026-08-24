@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Taller - Sistema JK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Poppins', sans-serif; min-height: 100vh; color: #fff; background: radial-gradient(circle at top left, #12353a 0%, #0d1117 40%, #090b10 100%); }
+.container { width: 100%; max-width: 1250px; margin: auto; padding: 25px; }
+
+/* HEADER */
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #12d8c4; color: #101319; font-weight: 700; font-size: 15px; box-shadow: 0 0 22px rgba(18,216,196,.2); }
+.brand-text h1 { font-size: 19px; font-weight: 600; }
+.brand-text span { color: #7d8594; font-size: 11px; }
+.btn-volver { padding: 8px 18px; border-radius: 10px; border: 1px solid rgba(18,216,196,.3); background: rgba(18,216,196,.08); color: #12d8c4; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: .2s; }
+.btn-volver:hover { background: rgba(18,216,196,.18); border-color: #12d8c4; }
+
+/* TITULO SECCION */
+.section-title { margin-bottom: 22px; }
+.section-title h2 { font-size: 24px; font-weight: 600; }
+.section-title p { color: #7d8594; font-size: 12px; margin-top: 4px; }
+
+/* DASHBOARD STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 25px; }
+.stat-card { padding: 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,.06); background: #171a21; display: flex; flex-direction: column; gap: 6px; transition: .2s; }
+.stat-card:hover { border-color: rgba(255,255,255,.12); }
+.stat-card .stat-label { font-size: 11px; color: #7d8594; text-transform: uppercase; letter-spacing: .5px; font-weight: 500; }
+.stat-card .stat-value { font-size: 28px; font-weight: 700; }
+.stat-card .stat-icon { font-size: 14px; margin-bottom: 2px; }
+.stat-total { border-color: rgba(18,216,196,.2); }
+.stat-total .stat-value { color: #12d8c4; }
+.stat-total .stat-icon { color: #12d8c4; }
+.stat-pendiente { border-color: rgba(255,94,94,.2); }
+.stat-pendiente .stat-value { color: #ff5e5e; }
+.stat-pendiente .stat-icon { color: #ff5e5e; }
+.stat-proceso { border-color: rgba(255,214,10,.2); }
+.stat-proceso .stat-value { color: #ffd60a; }
+.stat-proceso .stat-icon { color: #ffd60a; }
+.stat-listo { border-color: rgba(76,175,80,.2); }
+.stat-listo .stat-value { color: #4caf50; }
+.stat-listo .stat-icon { color: #4caf50; }
+
+/* FILTROS Y BUSQUEDA */
+.filters-bar { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; align-items: center; }
+.search-box { flex: 1; min-width: 200px; position: relative; }
+.search-box input { width: 100%; height: 44px; border: 1px solid rgba(255,255,255,.06); outline: none; border-radius: 12px; background: #171a21; color: #fff; padding: 0 14px 0 40px; font-family: 'Poppins', sans-serif; font-size: 13px; transition: .2s; }
+.search-box input:focus { border-color: #12d8c4; box-shadow: 0 0 12px rgba(18,216,196,.1); }
+.search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #596170; font-size: 14px; }
+.filter-btn { padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(255,255,255,.06); background: #171a21; color: #7d8594; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: .2s; white-space: nowrap; }
+.filter-btn:hover { border-color: rgba(255,255,255,.15); color: #fff; }
+.filter-btn.active { background: rgba(18,216,196,.12); border-color: #12d8c4; color: #12d8c4; }
+.filter-btn.active-pendiente { background: rgba(255,94,94,.12); border-color: #ff5e5e; color: #ff5e5e; }
+.filter-btn.active-proceso { background: rgba(255,214,10,.12); border-color: #ffd60a; color: #ffd60a; }
+.filter-btn.active-listo { background: rgba(76,175,80,.12); border-color: #4caf50; color: #4caf50; }
+.btn-refresh { padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(18,216,196,.25); background: rgba(18,216,196,.08); color: #12d8c4; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: .2s; }
+.btn-refresh:hover { background: rgba(18,216,196,.18); }
+
+/* TARJETAS DE REPARACION */
+.repair-list { display: flex; flex-direction: column; gap: 14px; }
+.repair-card { background: #171a21; border: 1px solid rgba(255,255,255,.06); border-radius: 16px; padding: 20px; transition: .25s; overflow: hidden; }
+.repair-card:hover { border-color: rgba(255,255,255,.14); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.3); }
+.repair-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.05); padding-bottom: 12px; flex-wrap: wrap; }
+.repair-info { flex: 1; min-width: 0; }
+.repair-title { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.repair-title i { color: #12d8c4; font-size: 14px; }
+.repair-order { font-size: 11px; color: #7d8594; font-weight: 400; background: rgba(255,255,255,.05); padding: 2px 10px; border-radius: 6px; }
+.repair-date { font-size: 11px; color: #596170; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+.estado-badge { padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; flex-shrink: 0; }
+.estado-pendiente { background: rgba(255,94,94,.12); color: #ff5e5e; border: 1px solid rgba(255,94,94,.3); }
+.estado-proceso { background: rgba(255,214,10,.12); color: #ffd60a; border: 1px solid rgba(255,214,10,.3); }
+.estado-listo { background: rgba(76,175,80,.12); color: #4caf50; border: 1px solid rgba(76,175,80,.3); }
+.estado-entregado { background: rgba(18,216,196,.12); color: #12d8c4; border: 1px solid rgba(18,216,196,.3); }
+
+/* BODY DE TARJETA */
+.repair-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.repair-field { display: flex; flex-direction: column; gap: 3px; }
+.repair-field .field-label { font-size: 10px; color: #596170; text-transform: uppercase; letter-spacing: .4px; font-weight: 500; }
+.repair-field .field-value { font-size: 13px; color: #bfc6d2; word-break: break-word; }
+.repair-field.falla { grid-column: 1 / -1; }
+.repair-field.falla .field-value { background: rgba(255,255,255,.03); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.04); line-height: 1.5; }
+
+/* ACCIONES DE TARJETA */
+.repair-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.04); }
+.estado-select-group { display: flex; align-items: center; gap: 8px; }
+.estado-select-group label { font-size: 11px; color: #7d8594; }
+.select-estado { background: #101319; border: 1px solid rgba(255,255,255,.1); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; font-family: 'Poppins', sans-serif; outline: none; transition: .2s; }
+.select-estado:focus { border-color: #12d8c4; }
+.action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-action { padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); color: #7d8594; font-family: 'Poppins', sans-serif; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: .2s; text-decoration: none; }
+.btn-action:hover { background: rgba(255,255,255,.08); color: #fff; }
+.btn-action.btn-whatsapp { border-color: rgba(37,211,102,.2); color: #25D366; }
+.btn-action.btn-whatsapp:hover { background: rgba(37,211,102,.12); }
+.btn-action.btn-ver-img { border-color: rgba(18,216,196,.2); color: #12d8c4; }
+.btn-action.btn-ver-img:hover { background: rgba(18,216,196,.1); }
+
+/* SIN RESULTADOS */
+.empty-state { text-align: center; padding: 50px 20px; color: #596170; }
+.empty-state i { font-size: 48px; margin-bottom: 15px; opacity: .4; }
+.empty-state p { font-size: 14px; }
+
+/* MODAL IMAGEN */
+.modal-img { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; cursor: pointer; }
+.modal-img img { max-width: 90%; max-height: 85vh; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+
+/* ALERTAS */
+.custom-alert-container { position: fixed; top: 25px; left: 0; right: 0; width: 280px; margin: 0 auto; z-index: 9999999; box-sizing: border-box; background: #171a21; border: 2px solid #12d8c4; border-radius: 14px; padding: 16px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.85); text-align: center; }
+.custom-alert-container.error { border-color: #ff5e5e; }
+
+/* LOADING */
+.loading-spinner { text-align: center; padding: 40px; color: #7d8594; }
+.loading-spinner i { font-size: 28px; color: #12d8c4; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* RESPONSIVE */
+@media(max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width: 600px) { 
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .repair-body { grid-template-columns: 1fr; }
+    .filters-bar { flex-direction: column; }
+    .search-box { min-width: 100%; }
+    .repair-card-header { flex-direction: column; }
+    .repair-actions { flex-direction: column; align-items: stretch; }
+    .estado-select-group { justify-content: space-between; }
+    .action-buttons { justify-content: stretch; }
+    .action-buttons .btn-action { flex: 1; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="brand">
+            <div class="logo">JK</div>
+            <div class="brand-text"><h1>Gestión de Taller</h1><span>Control de reparaciones en tiempo real</span></div>
+        </div>
+        <a href="index.html" class="btn-volver"><i class="fa-solid fa-arrow-left"></i> Volver al Sistema</a>
+    </header>
+
+    <!-- STATS DASHBOARD -->
+    <div class="section-title">
+        <h2><i class="fa-solid fa-screwdriver-wrench" style="color:#12d8c4; margin-right:8px;"></i>Estado General del Taller</h2>
+        <p>Resumen de todas las reparaciones registradas.</p>
+    </div>
+    <div class="stats-grid" id="stats-grid">
+        <div class="stat-card stat-total"><i class="fa-solid fa-clipboard-list stat-icon"></i><span class="stat-label">Total en Taller</span><span class="stat-value" id="stat-total">--</span></div>
+        <div class="stat-card stat-pendiente"><i class="fa-solid fa-clock stat-icon"></i><span class="stat-label">Pendientes</span><span class="stat-value" id="stat-pendiente">--</span></div>
+        <div class="stat-card stat-proceso"><i class="fa-solid fa-gear stat-icon"></i><span class="stat-label">En Proceso</span><span class="stat-value" id="stat-proceso">--</span></div>
+        <div class="stat-card stat-listo"><i class="fa-solid fa-circle-check stat-icon"></i><span class="stat-label">Listos para Entrega</span><span class="stat-value" id="stat-listo">--</span></div>
+    </div>
+
+    <!-- BARRA DE FILTROS Y BUSQUEDA -->
+    <div class="filters-bar">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Buscar por cliente, equipo, factura, IMEI..." oninput="filtrarReparaciones()">
+        </div>
+        <button class="filter-btn active" data-filter="todos" onclick="setFilter('todos', this)"><i class="fa-solid fa-layer-group"></i> Todos</button>
+        <button class="filter-btn" data-filter="Pendiente" onclick="setFilter('Pendiente', this)"><i class="fa-solid fa-clock"></i> Pendiente</button>
+        <button class="filter-btn" data-filter="En Proceso" onclick="setFilter('En Proceso', this)"><i class="fa-solid fa-gear"></i> En Proceso</button>
+        <button class="filter-btn" data-filter="Listo" onclick="setFilter('Listo', this)"><i class="fa-solid fa-circle-check"></i> Listo</button>
+        <button class="filter-btn" data-filter="Entregado" onclick="setFilter('Entregado', this)"><i class="fa-solid fa-hand-holding-heart"></i> Entregado</button>
+        <button class="btn-refresh" onclick="cargarTaller()"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+    </div>
+
+    <!-- LISTA DE REPARACIONES -->
+    <div class="repair-list" id="repair-list">
+        <div class="loading-spinner"><i class="fa-solid fa-circle-notch"></i><p style="margin-top:10px;">Cargando equipos en taller...</p></div>
+    </div>
+</div>
+
+<!-- MODAL PARA VER IMAGEN -->
+<div class="modal-img" id="modalImagen" onclick="this.style.display='none'"><img src="" alt="Evidencia" id="modalImgSrc"></div>
+
+<script>
+window.jkSupabase = window.jkSupabase || window.supabase.createClient(
+    "https://scippqgodwvbopslwxdf.supabase.co",
+    "sb_publishable_sakCK5FcUzB3ZmfwNKt4cw_AJi2Nw95"
+);
+
+const NOMBRE_TABLA = 'operaciones';
+let todasLasReparaciones = [];
+let filtroActual = 'todos';
+
+function formatoMoneda(num) {
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(num || 0);
+}
+
+function obtenerFechaCorta(fechaStr) {
+    if (!fechaStr) return 'Sin fecha';
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function obtenerHora(fechaStr) {
+    if (!fechaStr) return '';
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function getEstadoClass(estado) {
+    if (!estado) return 'estado-pendiente';
+    const e = estado.trim().toLowerCase();
+    if (e.includes('pendient')) return 'estado-pendiente';
+    if (e.includes('proceso') || e.includes('esperando')) return 'estado-proceso';
+    if (e.includes('listo') || e.includes('list')) return 'estado-listo';
+    if (e.includes('entregad')) return 'estado-entregado';
+    return 'estado-pendiente';
+}
+
+function getEstadoIcon(estado) {
+    if (!estado) return '⏳';
+    const e = estado.trim().toLowerCase();
+    if (e.includes('pendient')) return '⏳';
+    if (e.includes('proceso') || e.includes('esperando')) return '????';
+    if (e.includes('listo') || e.includes('list')) return '✅';
+    if (e.includes('entregad')) return '????';
+    return '⏳';
+}
+
+// ==========================================
+// CARGAR TALLER
+// ==========================================
+async function cargarTaller() {
+    const lista = document.getElementById('repair-list');
+    lista.innerHTML = '<div class="loading-spinner"><i class="fa-solid fa-circle-notch"></i><p style="margin-top:10px;">Cargando equipos...</p></div>';
+
+    try {
+        const { data, error } = await window.jkSupabase
+            .from(NOMBRE_TABLA)
+            .select('*')
+            .eq('tipo_operacion', 'Reparacion')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        todasLasReparaciones = data || [];
+        actualizarStats();
+        filtrarReparaciones();
+    } catch (e) {
+        console.error(e);
+        lista.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation" style="color:#ff5e5e;"></i><p style="color:#ff5e5e;">Error al cargar los datos del taller. Verifica tu conexión.</p></div>';
+    }
+}
+
+// ==========================================
+// ACTUALIZAR ESTADISTICAS
+// ==========================================
+function actualizarStats() {
+    const total = todasLasReparaciones.length;
+    const pendientes = todasLasReparaciones.filter(r => (r.estado_taller || '').toLowerCase().includes('pendient')).length;
+    const enProceso = todasLasReparaciones.filter(r => (r.estado_taller || '').toLowerCase().includes('proceso') || (r.estado_taller || '').toLowerCase().includes('esperando')).length;
+    const listos = todasLasReparaciones.filter(r => (r.estado_taller || '').toLowerCase().includes('list')).length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-pendiente').textContent = pendientes;
+    document.getElementById('stat-proceso').textContent = enProceso;
+    document.getElementById('stat-listo').textContent = listos;
+}
+
+// ==========================================
+// FILTROS
+// ==========================================
+function setFilter(filtro, btn) {
+    filtroActual = filtro;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+        b.className = 'filter-btn';
+    });
+    btn.classList.add('active');
+    if (filtro === 'Pendiente') btn.classList.add('active-pendiente');
+    if (filtro === 'En Proceso') btn.classList.add('active-proceso');
+    if (filtro === 'Listo') btn.classList.add('active-listo');
+    if (filtro === 'Entregado') btn.classList.add('active');
+    filtrarReparaciones();
+}
+
+function filtrarReparaciones() {
+    const texto = document.getElementById('searchInput').value.toLowerCase().trim();
+    let filtradas = todasLasReparaciones;
+
+    if (filtroActual !== 'todos') {
+        filtradas = filtradas.filter(r => {
+            const estado = (r.estado_taller || '').toLowerCase();
+            if (filtroActual === 'Pendiente') return estado.includes('pendient');
+            if (filtroActual === 'En Proceso') return estado.includes('proceso') || estado.includes('esperando');
+            if (filtroActual === 'Listo') return estado.includes('list');
+            if (filtroActual === 'Entregado') return estado.includes('entregad');
+            return true;
+        });
+    }
+
+    if (texto) {
+        filtradas = filtradas.filter(r => {
+            const cliente = (r.customer_name || '').toLowerCase();
+            const equipo = (r.equipo || '').toLowerCase();
+            const factura = (r.numero_factura || '').toLowerCase();
+            const imei = (r.imei_serial || '').toLowerCase();
+            const falla = (r.falla || '').toLowerCase();
+            const asesor = (r.asesor || '').toLowerCase();
+            return cliente.includes(texto) || equipo.includes(texto) || factura.includes(texto) || imei.includes(texto) || falla.includes(texto) || asesor.includes(texto);
+        });
+    }
+
+    renderizarLista(filtradas);
+}
+
+// ==========================================
+// RENDERIZAR LISTA
+// ==========================================
+function renderizarLista(lista) {
+    const container = document.getElementById('repair-list');
+    container.innerHTML = '';
+
+    if (lista.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fa-solid fa-inbox"></i><p>No se encontraron reparaciones con los filtros aplicados.</p></div>';
+        return;
+    }
+
+    lista.forEach(item => {
+        const estado = item.estado_taller || 'Pendiente';
+        const estadoClass = getEstadoClass(estado);
+        const icono = getEstadoIcon(estado);
+        const fecha = item.created_at ? obtenerFechaCorta(item.created_at) : 'Sin fecha';
+        const hora = item.created_at ? obtenerHora(item.created_at) : '';
+
+        const card = document.createElement('div');
+        card.className = 'repair-card';
+        card.innerHTML = `
+            <!-- HEADER DE TARJETA -->
+            <div class="repair-card-header">
+                <div class="repair-info">
+                    <div class="repair-title">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        ${item.equipo || 'Equipo sin nombre'}
+                        <span class="repair-order"><i class="fa-solid fa-hashtag"></i> ${item.numero_factura || 'N/A'}</span>
+                    </div>
+                    <div class="repair-date"><i class="fa-regular fa-calendar"></i> ${fecha} ${hora ? '• ' + hora : ''}</div>
+                </div>
+                <span class="estado-badge ${estadoClass}">${icono} ${estado}</span>
+            </div>
+
+            <!-- CUERPO DE TARJETA -->
+            <div class="repair-body">
+                <div class="repair-field">
+                    <span class="field-label"><i class="fa-solid fa-user"></i> Cliente</span>
+                    <span class="field-value">${item.customer_name || 'N/A'}</span>
+                </div>
+                <div class="repair-field">
+                    <span class="field-label"><i class="fa-solid fa-phone"></i> Teléfono</span>
+                    <span class="field-value">${item.customer_phone || 'N/A'}</span>
+                </div>
+                <div class="repair-field">
+                    <span class="field-label"><i class="fa-solid fa-barcode"></i> IMEI / Serial</span>
+                    <span class="field-value">${item.imei_serial || 'N/A'}</span>
+                </div>
+                <div class="repair-field">
+                    <span class="field-label"><i class="fa-solid fa-money-bill-wave"></i> Valor Reparación</span>
+                    <span class="field-value" style="color:#12d8c4; font-weight:600;">${formatoMoneda(item.total)}</span>
+                </div>
+                <div class="repair-field">
+                    <span class="field-label"><i class="fa-solid fa-credit-card"></i> Pago</span>
+                    <span class="field-value">${item.payment_method || 'N/A'} — ${item.payment_type || 'N/A'}</span>
+                </div>
+                <div class="repair-field">
+                    <span class="field-label"><i class="fa-solid fa-user-tie"></i> Asesor</span>
+                    <span class="field-value">${item.asesor || 'N/A'}</span>
+                </div>
+                <div class="repair-field falla">
+                    <span class="field-label"><i class="fa-solid fa-circle-exclamation"></i> Descripción de la Falla</span>
+                    <span class="field-value">${item.falla || 'Sin descripción'}</span>
+                </div>
+            </div>
+
+            <!-- ACCIONES -->
+            <div class="repair-actions">
+                <div class="estado-select-group">
+                    <label>Actualizar estado:</label>
+                    <select class="select-estado" onchange="actualizarEstadoTaller(${item.id}, this.value)">
+                        <option value="Pendiente" ${estado.toLowerCase().includes('pendient') ? 'selected' : ''}>⏳ Pendiente</option>
+                        <option value="En Proceso" ${(estado.toLowerCase().includes('proceso') || estado.toLowerCase().includes('esperando')) ? 'selected' : ''}>???? En Proceso</option>
+                        <option value="Listo" ${estado.toLowerCase().includes('list') ? 'selected' : ''}>✅ Listo para Entrega</option>
+                        <option value="Entregado" ${estado.toLowerCase().includes('entregad') ? 'selected' : ''}>???? Entregado al Cliente</option>
+                    </select>
+                </div>
+                <div class="action-buttons">
+                    <a href="https://api.whatsapp.com/send?phone=${formatearWhatsapp(item.customer_phone)}&text=${encodeURIComponent(mensajeWhatsapp(item))}" target="_blank" class="btn-action btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Notificar</a>
+                    ${item.imagen_url ? `<button class="btn-action btn-ver-img" onclick="verImagen('${item.imagen_url}')"><i class="fa-solid fa-image"></i> Ver Evidencia</button>` : ''}
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// ==========================================
+// ACTUALIZAR ESTADO
+// ==========================================
+async function actualizarEstadoTaller(idOperacion, nuevoEstado) {
+    try {
+        const { error } = await window.jkSupabase
+            .from(NOMBRE_TABLA)
+            .update({ estado_taller: nuevoEstado })
+            .eq('id', idOperacion);
+
+        if (error) throw error;
+
+        // Actualizar localmente
+        const item = todasLasReparaciones.find(r => r.id === idOperacion);
+        if (item) item.estado_taller = nuevoEstado;
+        
+        actualizarStats();
+        filtrarReparaciones();
+        mostrarAlertaExito(`Estado actualizado a: ${nuevoEstado}`);
+    } catch (e) {
+        console.error(e);
+        mostrarAlertaError("Error al actualizar: " + e.message);
+    }
+}
+
+// ==========================================
+// UTILIDADES
+// ==========================================
+function formatearWhatsapp(telefono) {
+    if (!telefono) return '';
+    let num = telefono.toString().replace(/D/g, '');
+    if (num.length === 10) num = '57' + num;
+    if (num.startsWith('0')) num = '57' + num.substring(1);
+    return num;
+}
+
+function mensajeWhatsapp(item) {
+    const estado = item.estado_taller || 'Pendiente';
+    return `Hola ${item.customer_name || 'cliente'}, le informamos que su reparación de *${item.equipo || 'equicio'}* en *ACCESORIOS JK* se encuentra: *${estado}*.nnTicket: ${item.numero_factura || 'N/A'}n???? Calle 14 # 2-67 Centro Ibagué-Tolima`;
+}
+
+function verImagen(url) {
+    const modal = document.getElementById('modalImagen');
+    document.getElementById('modalImgSrc').src = url;
+    modal.style.display = 'flex';
+}
+
+// ==========================================
+// ALERTAS
+// ==========================================
+function mostrarAlertaExito(mensaje) {
+    const alertasPrevias = document.querySelectorAll('.custom-alert-container');
+    alertasPrevias.forEach(a => a.remove());
+    const alerta = document.createElement('div');
+    alerta.className = 'custom-alert-container';
+    alerta.style.background = '#171a21'; alerta.style.border = '2px solid #12d8c4'; alerta.style.borderRadius = '14px';
+    alerta.style.padding = '16px 20px'; alerta.style.boxShadow = '0 10px 30px rgba(0,0,0,0.85)'; alerta.style.textAlign = 'center';
+    alerta.innerHTML = `<div style="margin-bottom:8px;"><i class="fa-solid fa-circle-check" style="color:#12d8c4; font-size:22px;"></i></div><p style="font-family:'Poppins',sans-serif; font-size:12px; font-weight:600; color:#fff; margin:0;">${mensaje}</p>`;
+    document.body.appendChild(alerta);
+    setTimeout(() => { alerta.style.transition = 'opacity 0.4s'; alerta.style.opacity = '0'; setTimeout(() => alerta.remove(), 400); }, 2500);
+}
+
+function mostrarAlertaError(mensaje) {
+    const alertasPrevias = document.querySelectorAll('.custom-alert-container');
+    alertasPrevias.forEach(a => a.remove());
+    const alerta = document.createElement('div');
+    alerta.className = 'custom-alert-container error';
+    alerta.style.background = '#171a21'; alerta.style.border = '2px solid #ff5e5e'; alerta.style.borderRadius = '14px';
+    alerta.style.padding = '16px 20px'; alerta.style.boxShadow = '0 10px 30px rgba(0,0,0,0.85)'; alerta.style.textAlign = 'center';
+    alerta.innerHTML = `<div style="margin-bottom:8px;"><i class="fa-solid fa-circle-xmark" style="color:#ff5e5e; font-size:22px;"></i></div><p style="font-family:'Poppins',sans-serif; font-size:12px; font-weight:600; color:#fff; margin:0;">${mensaje}</p>`;
+    document.body.appendChild(alerta);
+    setTimeout(() => { alerta.style.transition = 'opacity 0.4s'; alerta.style.opacity = '0'; setTimeout(() => alerta.remove(), 400); }, 3500);
+}
+
+// ==========================================
+// INICIALIZAR
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    cargarTaller();
+    // Auto-refresh cada 60 segundos
+    setInterval(() => cargarTaller(), 60000);
+});
+</script>
+</body>
+</html>
