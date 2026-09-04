@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -21,8 +23,6 @@ body { font-family: 'Poppins', sans-serif; min-height: 100vh; color: #fff; backg
 .logo { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #12d8c4; color: #101319; font-weight: 700; font-size: 15px; box-shadow: 0 0 22px rgba(18,216,196,.2); }
 .brand-text h1 { font-size: 19px; font-weight: 600; }
 .brand-text span { color: #7d8594; font-size: 11px; }
-.btn-volver { padding: 8px 18px; border-radius: 10px; border: 1px solid rgba(18,216,196,.3); background: rgba(18,216,196,.08); color: #12d8c4; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: .2s; }
-.btn-volver:hover { background: rgba(18,216,196,.18); border-color: #12d8c4; }
 
 /* TITULO SECCION */
 .section-title { margin-bottom: 22px; }
@@ -74,43 +74,100 @@ body { font-family: 'Poppins', sans-serif; min-height: 100vh; color: #fff; backg
 .btn-refresh { padding: 10px 18px; border-radius: 10px; border: 1px solid rgba(18,216,196,.25); background: rgba(18,216,196,.08); color: #12d8c4; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: .2s; grid-column: 1 / -1; justify-content: center; }
 .btn-refresh:hover { background: rgba(18,216,196,.18); }
 
-/* TARJETAS DE REPARACION */
-.repair-list { display: flex; flex-direction: column; gap: 14px; }
-.repair-card { background: #171a21; border: 1px solid rgba(255,255,255,.06); border-radius: 16px; padding: 20px; transition: .25s; overflow: hidden; }
-.repair-card:hover { border-color: rgba(255,255,255,.14); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.3); }
-.repair-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.05); padding-bottom: 12px; flex-wrap: wrap; }
+/* TARJETAS DE REPARACION - COMPACTAS */
+.repair-list { display: flex; flex-direction: column; gap: 10px; }
+.repair-card { background: #171a21; border: 1px solid rgba(255,255,255,.06); border-radius: 12px; padding: 12px 14px; transition: .25s; overflow: hidden; }
+.repair-card:hover { border-color: rgba(255,255,255,.14); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+.repair-card-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
 .repair-info { flex: 1; min-width: 0; }
-.repair-title { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.repair-title i { color: #12d8c4; font-size: 14px; }
-.repair-order { font-size: 11px; color: #7d8594; font-weight: 400; background: rgba(255,255,255,.05); padding: 2px 10px; border-radius: 6px; }
-.repair-date { font-size: 11px; color: #596170; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
-.estado-badge { padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; flex-shrink: 0; }
+.repair-title { font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.repair-title > i:first-child { color: #12d8c4; font-size: 12px; }
+.repair-order { font-size: 10px; color: #7d8594; font-weight: 400; background: rgba(255,255,255,.05); padding: 2px 8px; border-radius: 6px; }
+.repair-date { font-size: 10px; color: #596170; margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+.estado-badge { padding: 3px 10px; border-radius: 14px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; flex-shrink: 0; }
 .estado-pendiente { background: rgba(255,94,94,.12); color: #ff5e5e; border: 1px solid rgba(255,94,94,.3); }
 .estado-proceso { background: rgba(255,214,10,.12); color: #ffd60a; border: 1px solid rgba(255,214,10,.3); }
 .estado-listo { background: rgba(76,175,80,.12); color: #4caf50; border: 1px solid rgba(76,175,80,.3); }
 .estado-entregado { background: rgba(18,216,196,.12); color: #12d8c4; border: 1px solid rgba(18,216,196,.3); }
 
-/* BODY DE TARJETA */
-.repair-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; }
-.repair-field { display: flex; flex-direction: column; gap: 3px; }
-.repair-field .field-label { font-size: 10px; color: #596170; text-transform: uppercase; letter-spacing: .4px; font-weight: 500; }
-.repair-field .field-value { font-size: 13px; color: #bfc6d2; word-break: break-word; }
+/* BODY DE TARJETA - COMPACTO */
+.repair-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px 10px; margin-bottom: 8px; }
+.repair-field { display: flex; flex-direction: column; gap: 1px; padding: 4px 0; }
+.repair-field .field-label { font-size: 9px; color: #596170; text-transform: uppercase; letter-spacing: .4px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+.repair-field .field-label i { font-size: 9px; }
+.repair-field .field-value { font-size: 12px; color: #bfc6d2; word-break: break-word; line-height: 1.35; }
 .repair-field.falla { grid-column: 1 / -1; }
-.repair-field.falla .field-value { background: rgba(255,255,255,.03); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.04); line-height: 1.5; }
+.repair-field.falla .field-value { background: rgba(255,255,255,.03); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.04); line-height: 1.4; font-size: 11px; }
 
-/* ACCIONES DE TARJETA */
-.repair-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.04); }
-.estado-select-group { display: flex; align-items: center; gap: 8px; }
-.estado-select-group label { font-size: 11px; color: #7d8594; }
-.select-estado { background: #101319; border: 1px solid rgba(255,255,255,.1); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; font-family: 'Poppins', sans-serif; outline: none; transition: .2s; }
+/* NOVEDADES */
+.repair-field.novedades { grid-column: 1 / -1; }
+.repair-field.novedades .field-value {
+    background: rgba(18,216,196,.05);
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px dashed rgba(18,216,196,.25);
+    line-height: 1.4;
+    font-size: 11px;
+    color: #cfeeed;
+    white-space: pre-wrap;
+}
+.novedades-input-group {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 6px;
+    margin-top: 2px;
+}
+.novedades-input-group textarea {
+    flex: 1;
+    min-height: 36px;
+    max-height: 90px;
+    resize: vertical;
+    background: #101319;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    outline: none;
+    transition: .2s;
+}
+.novedades-input-group textarea:focus { border-color: #12d8c4; box-shadow: 0 0 8px rgba(18,216,196,.1); }
+.btn-guardar-novedad {
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(18,216,196,.3);
+    background: rgba(18,216,196,.1);
+    color: #12d8c4;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: .2s;
+    white-space: nowrap;
+}
+.btn-guardar-novedad:hover { background: rgba(18,216,196,.2); }
+.btn-guardar-novedad:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ACCIONES DE TARJETA - COMPACTAS */
+.repair-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.04); }
+.estado-select-group { display: flex; align-items: center; gap: 6px; }
+.estado-select-group label { font-size: 10px; color: #7d8594; }
+.select-estado { background: #101319; border: 1px solid rgba(255,255,255,.1); color: #fff; padding: 4px 8px; border-radius: 7px; font-size: 11px; cursor: pointer; font-family: 'Poppins', sans-serif; outline: none; transition: .2s; }
 .select-estado:focus { border-color: #12d8c4; }
-.action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn-action { padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); color: #7d8594; font-family: 'Poppins', sans-serif; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: .2s; text-decoration: none; }
+.action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-action { padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); color: #7d8594; font-family: 'Poppins', sans-serif; font-size: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: .2s; text-decoration: none; }
 .btn-action:hover { background: rgba(255,255,255,.08); color: #fff; }
 .btn-action.btn-whatsapp { border-color: rgba(37,211,102,.2); color: #25D366; }
 .btn-action.btn-whatsapp:hover { background: rgba(37,211,102,.12); }
 .btn-action.btn-ver-img { border-color: rgba(18,216,196,.2); color: #12d8c4; }
 .btn-action.btn-ver-img:hover { background: rgba(18,216,196,.1); }
+.btn-action.btn-pdf { border-color: rgba(255,94,94,.2); color: #ff7a7a; }
+.btn-action.btn-pdf:hover { background: rgba(255,94,94,.12); color: #ff5e5e; }
+.btn-action.btn-pdf:disabled { opacity: .6; cursor: not-allowed; }
 
 /* SIN RESULTADOS */
 .empty-state { text-align: center; padding: 50px 20px; color: #596170; }
@@ -132,14 +189,12 @@ body { font-family: 'Poppins', sans-serif; min-height: 100vh; color: #fff; backg
 
 /* RESPONSIVE */
 @media(max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-@media(max-width: 600px) { 
+@media(max-width: 600px) {
     .stats-grid { grid-template-columns: 1fr 1fr; }
-         .filters-bar {
-        grid-template-columns: 1fr 1fr;
-    }
-    .repair-body { grid-template-columns: 1fr; }
+    .filters-bar { grid-template-columns: 1fr 1fr; }
+    .repair-body { grid-template-columns: 1fr 1fr; }
     .search-box { min-width: 100%; }
-    .repair-card-header { flex-direction: column; }
+    .repair-card-header { flex-direction: column; align-items: flex-start; }
     .repair-actions { flex-direction: column; align-items: stretch; }
     .estado-select-group { justify-content: space-between; }
     .action-buttons { justify-content: stretch; }
@@ -202,6 +257,9 @@ window.jkSupabase = window.jkSupabase || window.supabase.createClient(
 const NOMBRE_TABLA = 'operaciones';
 let todasLasReparaciones = [];
 let filtroActual = 'todos';
+let novedadesDraft = {};
+let guardandoNovedadId = null;
+let generandoPdfId = null;
 
 function formatoMoneda(num) {
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(num || 0);
@@ -239,6 +297,15 @@ function getEstadoIcon(estado) {
     return '⏳';
 }
 
+function getEstadoRGB(estado) {
+    const e = (estado || '').trim().toLowerCase();
+    if (e.includes('pendient')) return [255, 94, 94];
+    if (e.includes('proceso') || e.includes('esperando')) return [255, 214, 10];
+    if (e.includes('list')) return [76, 175, 80];
+    if (e.includes('entregad')) return [18, 216, 196];
+    return [125, 133, 148];
+}
+
 // ==========================================
 // CARGAR TALLER
 // ==========================================
@@ -269,7 +336,10 @@ async function cargarTaller() {
 function actualizarStats() {
     const total = todasLasReparaciones.length;
     const pendientes = todasLasReparaciones.filter(r => (r.estado_taller || '').toLowerCase().includes('pendient')).length;
-    const enProceso = todasLasReparaciones.filter(r => (r.estado_taller || '').toLowerCase().includes('proceso') || (r.estado_taller || '').toLowerCase().includes('esperando')).length;
+    const enProceso = todasLasReparaciones.filter(r => {
+        const e = (r.estado_taller || '').toLowerCase();
+        return e.includes('proceso') || e.includes('esperando');
+    }).length;
     const listos = todasLasReparaciones.filter(r => (r.estado_taller || '').toLowerCase().includes('list')).length;
 
     document.getElementById('stat-total').textContent = total;
@@ -317,7 +387,8 @@ function filtrarReparaciones() {
             const imei = (r.imei_serial || '').toLowerCase();
             const falla = (r.falla || '').toLowerCase();
             const asesor = (r.asesor || '').toLowerCase();
-            return cliente.includes(texto) || equipo.includes(texto) || factura.includes(texto) || imei.includes(texto) || falla.includes(texto) || asesor.includes(texto);
+            const novedades = (r.novedades || '').toLowerCase();
+            return cliente.includes(texto) || equipo.includes(texto) || factura.includes(texto) || imei.includes(texto) || falla.includes(texto) || asesor.includes(texto) || novedades.includes(texto);
         });
     }
 
@@ -342,6 +413,7 @@ function renderizarLista(lista) {
         const icono = getEstadoIcon(estado);
         const fecha = item.created_at ? obtenerFechaCorta(item.created_at) : 'Sin fecha';
         const hora = item.created_at ? obtenerHora(item.created_at) : '';
+        const novedadesTxt = (item.novedades || '').trim();
 
         const card = document.createElement('div');
         card.className = 'repair-card';
@@ -389,6 +461,28 @@ function renderizarLista(lista) {
                     <span class="field-label"><i class="fa-solid fa-circle-exclamation"></i> Descripción de la Falla</span>
                     <span class="field-value">${item.falla || 'Sin descripción'}</span>
                 </div>
+                ${novedadesTxt ? `
+                <div class="repair-field novedades">
+                    <span class="field-label"><i class="fa-solid fa-note-sticky"></i> Novedades de la reparación</span>
+                    <span class="field-value">${novedadesTxt}</span>
+                </div>` : ''}
+                <div class="novedades-input-group">
+                    <textarea 
+                        id="novedad-${item.id}" 
+                        placeholder="Escribe una novedad de la reparación..."
+                        onkeydown="if(event.ctrlKey && event.key==='Enter'){event.preventDefault();guardarNovedad(${item.id});}"
+                    >${novedadesDraft[item.id] || ''}</textarea>
+                    <button 
+                        class="btn-guardar-novedad" 
+                        id="btn-novedad-${item.id}"
+                        onclick="guardarNovedad(${item.id})"
+                        ${(guardandoNovedadId === item.id || !(novedadesDraft[item.id] || '').trim()) ? 'disabled' : ''}
+                        title="Guardar novedad (Ctrl+Enter)"
+                    >
+                        <i class="${guardandoNovedadId === item.id ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-floppy-disk'}"></i>
+                        ${guardandoNovedadId === item.id ? 'Guardando' : 'Guardar'}
+                    </button>
+                </div>
             </div>
 
             <!-- ACCIONES -->
@@ -405,10 +499,34 @@ function renderizarLista(lista) {
                 <div class="action-buttons">
                     <a href="https://api.whatsapp.com/send?phone=${formatearWhatsapp(item.customer_phone)}&text=${encodeURIComponent(mensajeWhatsapp(item))}" target="_blank" class="btn-action btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Notificar</a>
                     ${item.imagen_url ? `<button class="btn-action btn-ver-img" onclick="verImagen('${item.imagen_url}')"><i class="fa-solid fa-image"></i> Ver Evidencia</button>` : ''}
+                    <button 
+                        class="btn-action btn-pdf" 
+                        id="btn-pdf-${item.id}"
+                        onclick="generarPDF(${item.id})"
+                        ${generandoPdfId === item.id ? 'disabled' : ''}
+                        title="Generar PDF con todos los datos"
+                    >
+                        <i class="${generandoPdfId === item.id ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-file-pdf'}"></i>
+                        ${generandoPdfId === item.id ? 'Generando...' : 'PDF'}
+                    </button>
                 </div>
             </div>
         `;
         container.appendChild(card);
+    });
+
+    // Agregar listeners para textarea
+    lista.forEach(item => {
+        const textarea = document.getElementById(`novedad-${item.id}`);
+        if (textarea) {
+            textarea.addEventListener('input', (e) => {
+                novedadesDraft[item.id] = e.target.value;
+                const btn = document.getElementById(`btn-novedad-${item.id}`);
+                if (btn) {
+                    btn.disabled = !e.target.value.trim();
+                }
+            });
+        }
     });
 }
 
@@ -438,6 +556,202 @@ async function actualizarEstadoTaller(idOperacion, nuevoEstado) {
 }
 
 // ==========================================
+// GUARDAR NOVEDAD
+// ==========================================
+async function guardarNovedad(idOperacion) {
+    const textarea = document.getElementById(`novedad-${idOperacion}`);
+    const texto = (textarea?.value || '').trim();
+    
+    if (!texto) {
+        mostrarAlertaError("Escribe una novedad antes de guardar");
+        return;
+    }
+    
+    guardandoNovedadId = idOperacion;
+    filtrarReparaciones();
+    
+    try {
+        const { error } = await window.jkSupabase
+            .from(NOMBRE_TABLA)
+            .update({ novedades: texto })
+            .eq('id', idOperacion);
+
+        if (error) throw error;
+
+        // Actualizar localmente
+        const item = todasLasReparaciones.find(r => r.id === idOperacion);
+        if (item) item.novedades = texto;
+        
+        novedadesDraft[idOperacion] = '';
+        mostrarAlertaExito("Novedad guardada correctamente");
+        filtrarReparaciones();
+    } catch (e) {
+        console.error(e);
+        mostrarAlertaError("Error al guardar novedad: " + e.message);
+    } finally {
+        guardandoNovedadId = null;
+    }
+}
+
+// ==========================================
+// GENERAR PDF
+// ==========================================
+function generarPDF(idOperacion) {
+    const item = todasLasReparaciones.find(r => r.id === idOperacion);
+    if (!item) return;
+    
+    generandoPdfId = idOperacion;
+    filtrarReparaciones();
+    
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        // Header banda
+        doc.setFillColor(18, 53, 58);
+        doc.rect(0, 0, pageWidth, 70, 'F');
+
+        // Logo circle
+        doc.setFillColor(18, 216, 196);
+        doc.circle(45, 35, 18, 'F');
+        doc.setTextColor(16, 19, 25);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('JK', 45, 40, { align: 'center' });
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('ACCESORIOS JK', 75, 32);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Gestión de Taller - Reporte de Reparación', 75, 50);
+
+        // Ticket / Fecha
+        doc.setTextColor(90, 100, 115);
+        doc.setFontSize(9);
+        const fecha = item.created_at ? `${obtenerFechaCorta(item.created_at)} ${obtenerHora(item.created_at)}` : 'Sin fecha';
+        doc.text(`Ticket: ${item.numero_factura || 'N/A'}   •   Fecha: ${fecha}`, 40, 100);
+
+        // Título principal
+        doc.setTextColor(18, 53, 58);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text(item.equipo || 'Equipo sin nombre', 40, 125);
+
+        // Estado chip
+        const estado = item.estado_taller || 'Pendiente';
+        const estadoColor = getEstadoRGB(estado);
+        doc.setFillColor(estadoColor[0], estadoColor[1], estadoColor[2]);
+        doc.roundedRect(pageWidth - 40 - 110, 110, 110, 22, 6, 6, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text(estado.toUpperCase(), pageWidth - 40 - 55, 124, { align: 'center' });
+
+        // Tabla de datos
+        const rows = [
+            ['Cliente', item.customer_name || 'N/A'],
+            ['Teléfono', item.customer_phone || 'N/A'],
+            ['Equipo', item.equipo || 'N/A'],
+            ['IMEI / Serial', item.imei_serial || 'N/A'],
+            ['Factura / Ticket', item.numero_factura || 'N/A'],
+            ['Valor Reparación', formatoMoneda(item.total)],
+            ['Método de Pago', item.payment_method || 'N/A'],
+            ['Tipo de Pago', item.payment_type || 'N/A'],
+            ['Asesor', item.asesor || 'N/A'],
+            ['Estado en Taller', estado],
+        ];
+
+        doc.autoTable({
+            startY: 150,
+            head: [['Campo', 'Valor']],
+            body: rows,
+            theme: 'grid',
+            styles: {
+                font: 'helvetica',
+                fontSize: 10,
+                cellPadding: 6,
+                textColor: [40, 45, 55],
+                lineColor: [220, 225, 230],
+                lineWidth: 0.5,
+            },
+            headStyles: {
+                fillColor: [18, 53, 58],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+            },
+            alternateRowStyles: { fillColor: [245, 247, 250] },
+            columnStyles: {
+                0: { cellWidth: 160, fontStyle: 'bold', textColor: [90, 100, 115] },
+                1: { cellWidth: 'auto' },
+            },
+            margin: { left: 40, right: 40 },
+        });
+
+        let finalY = doc.lastAutoTable.finalY + 14;
+
+        // Falla
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(18, 53, 58);
+        doc.text('Descripción de la Falla', 40, finalY);
+        finalY += 4;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(40, 45, 55);
+        const fallaText = item.falla || 'Sin descripción';
+        const fallaLines = doc.splitTextToSize(fallaText, pageWidth - 80);
+        doc.setFillColor(245, 247, 250);
+        doc.roundedRect(40, finalY, pageWidth - 80, Math.max(26, fallaLines.length * 13 + 12), 6, 6, 'F');
+        doc.text(fallaLines, 50, finalY + 16);
+        finalY += Math.max(26, fallaLines.length * 13 + 12) + 14;
+
+        // Novedades
+        const novedadesTxt = (item.novedades || '').trim();
+        if (novedadesTxt) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(18, 53, 58);
+            doc.text('Novedades de la Reparación', 40, finalY);
+            finalY += 4;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(40, 45, 55);
+            const novLines = doc.splitTextToSize(novedadesTxt, pageWidth - 80);
+            doc.setFillColor(232, 252, 249);
+            doc.roundedRect(40, finalY, pageWidth - 80, Math.max(26, novLines.length * 13 + 12), 6, 6, 'F');
+            doc.text(novLines, 50, finalY + 16);
+            finalY += Math.max(26, novLines.length * 13 + 12) + 14;
+        }
+
+        // Footer
+        const pageHeight = doc.internal.pageSize.getHeight();
+        doc.setFillColor(18, 53, 58);
+        doc.rect(0, pageHeight - 50, pageWidth, 50, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text('ACCESORIOS JK', 40, pageHeight - 30);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text('Calle 14 # 2-67 - Centro, Ibagué - Tolima', 40, pageHeight - 16);
+        doc.text(`Generado: ${new Date().toLocaleString('es-CO')}`, pageWidth - 40, pageHeight - 16, { align: 'right' });
+
+        const fileName = `reparacion_${item.numero_factura || item.id || 'ticket'}.pdf`;
+        doc.save(fileName);
+        mostrarAlertaExito('PDF generado correctamente');
+    } catch (e) {
+        console.error(e);
+        mostrarAlertaError('Error al generar el PDF');
+    } finally {
+        generandoPdfId = null;
+        filtrarReparaciones();
+    }
+}
+
+// ==========================================
 // UTILIDADES
 // ==========================================
 function formatearWhatsapp(telefono) {
@@ -450,12 +764,14 @@ function formatearWhatsapp(telefono) {
 
 function mensajeWhatsapp(item) {
     const estado = item.estado_taller || 'Pendiente';
+    const novedades = (item.novedades || '').trim();
+    const novedadesBlock = novedades ? `nn*Novedades de la reparación:*n*${novedades}*` : '';
     
     return `Hola ${item.customer_name || 'cliente'},
 
 Le informamos que su reparación de *${item.equipo || 'equipo'}* en *ACCESORIOS JK* se encuentra actualmente en estado: *${estado}*.
 
-Ticket: ${item.numero_factura || 'N/A'}
+Ticket: ${item.numero_factura || 'N/A'}${novedadesBlock}
 
 Dirección:
 Calle 14 # 2-67
@@ -478,8 +794,6 @@ function mostrarAlertaExito(mensaje) {
     alertasPrevias.forEach(a => a.remove());
     const alerta = document.createElement('div');
     alerta.className = 'custom-alert-container';
-    alerta.style.background = '#171a21'; alerta.style.border = '2px solid #12d8c4'; alerta.style.borderRadius = '14px';
-    alerta.style.padding = '16px 20px'; alerta.style.boxShadow = '0 10px 30px rgba(0,0,0,0.85)'; alerta.style.textAlign = 'center';
     alerta.innerHTML = `<div style="margin-bottom:8px;"><i class="fa-solid fa-circle-check" style="color:#12d8c4; font-size:22px;"></i></div><p style="font-family:'Poppins',sans-serif; font-size:12px; font-weight:600; color:#fff; margin:0;">${mensaje}</p>`;
     document.body.appendChild(alerta);
     setTimeout(() => { alerta.style.transition = 'opacity 0.4s'; alerta.style.opacity = '0'; setTimeout(() => alerta.remove(), 400); }, 2500);
@@ -490,8 +804,6 @@ function mostrarAlertaError(mensaje) {
     alertasPrevias.forEach(a => a.remove());
     const alerta = document.createElement('div');
     alerta.className = 'custom-alert-container error';
-    alerta.style.background = '#171a21'; alerta.style.border = '2px solid #ff5e5e'; alerta.style.borderRadius = '14px';
-    alerta.style.padding = '16px 20px'; alerta.style.boxShadow = '0 10px 30px rgba(0,0,0,0.85)'; alerta.style.textAlign = 'center';
     alerta.innerHTML = `<div style="margin-bottom:8px;"><i class="fa-solid fa-circle-xmark" style="color:#ff5e5e; font-size:22px;"></i></div><p style="font-family:'Poppins',sans-serif; font-size:12px; font-weight:600; color:#fff; margin:0;">${mensaje}</p>`;
     document.body.appendChild(alerta);
     setTimeout(() => { alerta.style.transition = 'opacity 0.4s'; alerta.style.opacity = '0'; setTimeout(() => alerta.remove(), 400); }, 3500);
